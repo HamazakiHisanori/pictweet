@@ -3,7 +3,9 @@ class TweetsController < ApplicationController
   before_action :move_to_index, except: [:index, :show, :search]
   
   def index
-  @tweets = Tweet.includes(:user).order("created_at DESC")
+  # @tweets = Tweet.includes(:user).order("created_at DESC")
+  query = "SELECT * FROM tweets"
+  @tweets = Tweet.find_by_sql(query)
 end
 
 def new
@@ -11,8 +13,13 @@ def new
 end
 
 def create
-  binding.pry
-  Tweet.create(tweet_params)
+  @tweet = Tweet.new(tweet_params)
+  if @tweet.valid?
+    @tweet.save 
+    redirect_to root_path
+  else
+    render :new
+  end
 end
 
 def destroy
@@ -34,7 +41,7 @@ def show
 end
 
 def search
-  @tweets = Tweet.search(params[:keyword])
+  @tweets = SearchTweetsService.search(params[:keyword])
 end
 
 private
